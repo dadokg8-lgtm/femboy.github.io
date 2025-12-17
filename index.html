@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Фембой Кликер</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="title">✨ Фембой Кликер ✨</h1>
+            <p class="subtitle">Кликай по фембою и зарабатывай очки!</p>
+        </header>
+
+        <div class="game-stats">
+            <div class="stat">
+                <span class="stat-label">Всего кликов:</span>
+                <span class="stat-value" id="totalClicks">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Кликов в секунду:</span>
+                <span class="stat-value" id="clicksPerSecond">0</span>
+            </div>
+        </div>
+
+        <main class="game-area">
+            <div class="click-section">
+                <div class="counter-container">
+                    <div class="counter-label">Текущие клики:</div>
+                    <div class="counter" id="counter">0</div>
+                </div>
+
+                <div class="click-area" id="clickArea">
+                    <img id="femboyImage" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop" alt="Фембой" class="click-image">
+                    <div class="hand" id="hand">👆</div>
+                    <div class="click-hint">Кликай сюда!</div>
+                </div>
+
+                <div class="boosters">
+                    <div class="booster">
+                        <span class="booster-label">Буст:</span>
+                        <span class="booster-value" id="boost">1.0x</span>
+                    </div>
+                    <div class="booster">
+                        <span class="booster-label">Автоклик:</span>
+                        <span class="booster-value" id="auto">0/сек</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="upgrades-section">
+                <h2 class="upgrades-title">🏆 Улучшения</h2>
+                
+                <div class="upgrade-card" id="boostUpgrade">
+                    <div class="upgrade-icon">💖</div>
+                    <div class="upgrade-content">
+                        <h3 class="upgrade-name">Усиление клика</h3>
+                        <p class="upgrade-description">Увеличивает силу каждого клика в 1.5 раза</p>
+                        <div class="upgrade-stats">
+                            <div class="upgrade-stat">
+                                <span class="stat-name">Текущий уровень:</span>
+                                <span class="stat-value" id="boostLevel">0</span>
+                            </div>
+                            <div class="upgrade-stat">
+                                <span class="stat-name">Множитель:</span>
+                                <span class="stat-value" id="boostMultiplier">1.0x</span>
+                            </div>
+                        </div>
+                        <button class="upgrade-btn" id="buyBoostBtn">
+                            <span class="btn-text">Купить за</span>
+                            <span class="btn-price" id="boostCost">50</span>
+                            <span class="btn-clicks">кликов</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="upgrade-card" id="autoUpgrade">
+                    <div class="upgrade-icon">⚡</div>
+                    <div class="upgrade-content">
+                        <h3 class="upgrade-name">Автокликер</h3>
+                        <p class="upgrade-description">Автоматически кликает каждую секунду</p>
+                        <div class="upgrade-stats">
+                            <div class="upgrade-stat">
+                                <span class="stat-name">Текущий уровень:</span>
+                                <span class="stat-value" id="autoLevel">0</span>
+                            </div>
+                            <div class="upgrade-stat">
+                                <span class="stat-name">Скорость:</span>
+                                <span class="stat-value" id="autoSpeed">0/сек</span>
+                            </div>
+                        </div>
+                        <button class="upgrade-btn" id="buyAutoBtn">
+                            <span class="btn-text">Купить за</span>
+                            <span class="btn-price" id="autoCost">250</span>
+                            <span class="btn-clicks">кликов</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="upgrade-card" id="prestigeUpgrade">
+                    <div class="upgrade-icon">🌟</div>
+                    <div class="upgrade-content">
+                        <h3 class="upgrade-name">Престиж</h3>
+                        <p class="upgrade-description">Сбрось прогресс за постоянный буст</p>
+                        <div class="upgrade-stats">
+                            <div class="upgrade-stat">
+                                <span class="stat-name">Текущий уровень:</span>
+                                <span class="stat-value" id="prestigeLevel">0</span>
+                            </div>
+                            <div class="upgrade-stat">
+                                <span class="stat-name">Бонус:</span>
+                                <span class="stat-value" id="prestigeBonus">+0%</span>
+                            </div>
+                        </div>
+                        <button class="upgrade-btn prestige-btn" id="prestigeBtn" disabled>
+                            <span class="btn-text">Требуется</span>
+                            <span class="btn-price">10,000</span>
+                            <span class="btn-clicks">кликов</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div class="customization">
+            <h2 class="customization-title">🎨 Настройки</h2>
+            <div class="customization-options">
+                <div class="customization-option">
+                    <label for="imageUpload" class="upload-label">
+                        <span class="upload-icon">📸</span>
+                        <span class="upload-text">Загрузить своего фембоя</span>
+                        <span class="upload-hint">Нажмите, чтобы выбрать изображение</span>
+                    </label>
+                    <input type="file" id="imageUpload" accept="image/*" class="file-input">
+                </div>
+
+                <div class="customization-option">
+                    <button class="settings-btn" id="resetBtn">
+                        <span class="btn-icon">🔄</span>
+                        <span class="btn-text">Сбросить игру</span>
+                    </button>
+                    <button class="settings-btn" id="saveBtn">
+                        <span class="btn-icon">💾</span>
+                        <span class="btn-text">Сохранить игру</span>
+                    </button>
+                </div>
+
+                <div class="theme-switcher">
+                    <span class="theme-label">Тема:</span>
+                    <div class="theme-options">
+                        <button class="theme-btn active" data-theme="dark">🌙 Тёмная</button>
+                        <button class="theme-btn" data-theme="light">☀️ Светлая</button>
+                        <button class="theme-btn" data-theme="pink">🌸 Розовая</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <div class="achievements">
+                <div class="achievement" id="firstClick">
+                    <span class="achievement-icon">🎯</span>
+                    <span class="achievement-name">Первый клик</span>
+                </div>
+                <div class="achievement" id="hundredClicks">
+                    <span class="achievement-icon">💯</span>
+                    <span class="achievement-name">100 кликов</span>
+                </div>
+                <div class="achievement" id="firstUpgrade">
+                    <span class="achievement-icon">🏆</span>
+                    <span class="achievement-name">Первое улучшение</span>
+                </div>
+            </div>
+            <p class="footer-text">Фембой Кликер v1.0 | Сделано с 💖</p>
+        </footer>
+    </div>
+
+    <div class="particles-container" id="particles"></div>
+    <div class="notification-container" id="notifications"></div>
+
+    <script src="game.js"></script>
+</body>
+</html>

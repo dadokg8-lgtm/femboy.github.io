@@ -1,455 +1,720 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Фембой Кликер</title>
-    <style>
-        /* Сброс и базовые стили */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            color: #fff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            overflow-x: hidden;
-        }
-        
-        /* Контейнер */
-        .container {
-            text-align: center;
-            max-width: 600px;
-            width: 100%;
-            background: rgba(25, 25, 40, 0.9);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-        }
-        
-        /* Заголовок */
-        h1 {
-            font-size: 2.8em;
-            margin-bottom: 25px;
-            background: linear-gradient(45deg, #ff6b9d, #ffd166);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 2px 10px rgba(255, 107, 157, 0.3);
-            letter-spacing: 1px;
-        }
-        
-        /* Статистика */
-        .stats {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            margin: 20px 0 30px;
-            font-size: 1.2em;
-            font-weight: 600;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .stats div {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        #boost {
-            color: #ffd166;
-            font-weight: bold;
-            font-size: 1.3em;
-        }
-        
-        #auto {
-            color: #06d6a0;
-            font-weight: bold;
-            font-size: 1.3em;
-        }
-        
-        /* Область клика */
-        .click-area {
-            width: 220px;
-            height: 220px;
-            margin: 0 auto 30px;
-            cursor: pointer;
-            border: 3px solid rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            overflow: hidden;
-            position: relative;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-        }
-        
-        .click-area:hover {
-            border-color: rgba(255, 107, 157, 0.5);
-            transform: scale(1.02);
-            box-shadow: 0 15px 30px rgba(255, 107, 157, 0.2);
-        }
-        
-        #femboyImage {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-        
-        /* Анимация руки */
-        .hand {
-            font-size: 70px;
-            position: absolute;
-            pointer-events: none;
-            opacity: 0;
-            z-index: 10;
-            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
-            transition: opacity 0.2s;
-        }
-        
-        /* Счётчик */
-        .counter {
-            font-size: 3.5em;
-            margin: 20px 0 30px;
-            color: #ffd166;
-            font-weight: 800;
-            text-shadow: 0 0 20px rgba(255, 209, 102, 0.5);
-            background: rgba(0, 0, 0, 0.3);
-            padding: 15px;
-            border-radius: 15px;
-            border: 2px solid rgba(255, 209, 102, 0.3);
-            letter-spacing: 2px;
-        }
-        
-        /* Улучшения */
-        .upgrades {
-            margin-top: 30px;
-            text-align: left;
-        }
-        
-        .upgrade {
-            background: linear-gradient(145deg, rgba(40, 40, 60, 0.9), rgba(30, 30, 50, 0.9));
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            padding: 18px;
-            margin: 15px 0;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .upgrade:hover {
-            transform: translateY(-5px);
-            background: linear-gradient(145deg, rgba(50, 50, 70, 0.9), rgba(40, 40, 60, 0.9));
-            border-color: rgba(255, 107, 157, 0.5);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-        }
-        
-        .upgrade:active {
-            transform: translateY(0);
-        }
-        
-        .upgrade::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transition: left 0.5s;
-        }
-        
-        .upgrade:hover::before {
-            left: 100%;
-        }
-        
-        .upgrade-title {
-            font-weight: bold;
-            margin-bottom: 8px;
-            font-size: 1.2em;
-            color: #ffd166;
-        }
-        
-        .upgrade-cost {
-            color: #ef476f;
-            font-size: 1em;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-        
-        .upgrade-owned {
-            color: #06d6a0;
-            font-size: 0.95em;
-            font-weight: 600;
-        }
-        
-        /* Кнопка загрузки */
-        .upload-btn {
-            background: linear-gradient(45deg, #118ab2, #06d6a0);
-            color: white;
-            border: none;
-            padding: 16px 32px;
-            margin-top: 25px;
-            cursor: pointer;
-            border-radius: 12px;
-            font-size: 1.1em;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: inline-block;
-            width: 100%;
-            letter-spacing: 0.5px;
-            box-shadow: 0 5px 15px rgba(6, 214, 160, 0.3);
-        }
-        
-        .upload-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(6, 214, 160, 0.4);
-            background: linear-gradient(45deg, #06d6a0, #118ab2);
-        }
-        
-        .upload-btn:active {
-            transform: translateY(0);
-        }
-        
-        /* Скрытый инпут */
-        #imageUpload {
-            display: none;
-        }
-        
-        /* Адаптивность */
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px 15px;
-            }
-            
-            h1 {
-                font-size: 2.2em;
-            }
-            
-            .stats {
-                flex-direction: column;
-                gap: 15px;
-                font-size: 1em;
-            }
-            
-            .click-area {
-                width: 200px;
-                height: 200px;
-            }
-            
-            .counter {
-                font-size: 2.8em;
-                padding: 12px;
-            }
-            
-            .upgrade {
-                padding: 15px;
-            }
-        }
-        
-        /* Анимация пульсации для клика */
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(0.95); }
-            100% { transform: scale(1); }
-        }
-        
-        .click-animation {
-            animation: pulse 0.2s ease;
-        }
-        
-        /* Эффект частиц (опционально) */
-        .particle {
-            position: absolute;
-            pointer-events: none;
-            opacity: 0.8;
-            font-size: 24px;
-            z-index: 5;
-            animation: float-up 1s ease-out forwards;
-        }
-        
-        @keyframes float-up {
-            0% {
-                transform: translateY(0) rotate(0deg);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100px) rotate(180deg);
-                opacity: 0;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Фембой Кликер</h1>
-        <div class="stats">
-            <div>Буст: <span id="boost">1x</span></div>
-            <div>Автоклик: <span id="auto">0/сек</span></div>
-        </div>
-        <div class="click-area" id="clickArea">
-            <img id="femboyImage" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop" alt="Фембой">
-            <div class="hand" id="hand">👆</div>
-        </div>
-        <div class="counter" id="counter">0</div>
-        
-        <div class="upgrades">
-            <div class="upgrade" id="boostUpgrade">
-                <div class="upgrade-title">Буст x1.5 (50 кликов)</div>
-                <div class="upgrade-cost" id="boostCost">Стоимость: 50</div>
-                <div class="upgrade-owned" id="boostOwned">Куплено: 0</div>
-            </div>
-            <div class="upgrade" id="autoUpgrade">
-                <div class="upgrade-title">Автомайнер (+1/сек)</div>
-                <div class="upgrade-cost" id="autoCost">Стоимость: 250</div>
-                <div class="upgrade-owned" id="autoOwned">Куплено: 0</div>
-            </div>
-        </div>
-        
-        <div class="upload-btn" id="uploadBtn">Добавить своего фембоя</div>
-        <input type="file" id="imageUpload" accept="image/*">
-    </div>
+/* Сброс и базовые стили */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-    <script>
-        // JavaScript остается без изменений, но добавлена небольшая анимация
-        let clicks = 0;
-        let boostLevel = 0;
-        let boostMultiplier = 1;
-        let autoLevel = 0;
-        let autoClicksPerSec = 0;
-        let boostCost = 50;
-        let autoCost = 250;
-        
-        const counter = document.getElementById('counter');
-        const clickArea = document.getElementById('clickArea');
-        const hand = document.getElementById('hand');
-        const uploadBtn = document.getElementById('uploadBtn');
-        const imageUpload = document.getElementById('imageUpload');
-        const boostElement = document.getElementById('boost');
-        const autoElement = document.getElementById('auto');
-        const boostUpgrade = document.getElementById('boostUpgrade');
-        const autoUpgrade = document.getElementById('autoUpgrade');
-        
-        function updateDisplay() {
-            counter.textContent = Math.floor(clicks);
-            boostElement.textContent = boostMultiplier.toFixed(1) + 'x';
-            autoElement.textContent = autoClicksPerSec + '/сек';
-            document.getElementById('boostCost').textContent = `Стоимость: ${boostCost}`;
-            document.getElementById('autoCost').textContent = `Стоимость: ${autoCost}`;
-            document.getElementById('boostOwned').textContent = `Куплено: ${boostLevel}`;
-            document.getElementById('autoOwned').textContent = `Куплено: ${autoLevel}`;
-            saveGame();
-        }
-        
-        function addClicks(amount) {
-            clicks += amount * boostMultiplier;
-            updateDisplay();
-        }
-        
-        function showHand(x, y) {
-            hand.style.left = (x - 30) + 'px';
-            hand.style.top = (y - 60) + 'px';
-            hand.style.opacity = '1';
-            setTimeout(() => hand.style.opacity = '0', 200);
-        }
-        
-        function buyBoost() {
-            if (clicks >= boostCost) {
-                clicks -= boostCost;
-                boostLevel++;
-                boostMultiplier *= 1.5;
-                boostCost = Math.floor(boostCost * 2.5);
-                updateDisplay();
-            }
-        }
-        
-        function buyAuto() {
-            if (clicks >= autoCost) {
-                clicks -= autoCost;
-                autoLevel++;
-                autoClicksPerSec++;
-                autoCost = Math.floor(autoCost * 3);
-                updateDisplay();
-            }
-        }
-        
-        function loadCustomImage() {
-            imageUpload.click();
-        }
-        
-        function saveGame() {
-            const gameData = {
-                clicks, boostLevel, boostMultiplier, autoLevel, 
-                autoClicksPerSec, boostCost, autoCost
-            };
-            localStorage.setItem('femboyGame', JSON.stringify(gameData));
-            localStorage.setItem('customFemboy', document.getElementById('femboyImage').src);
-        }
-        
-        function loadGame() {
-            const saved = localStorage.getItem('femboyGame');
-            const savedImage = localStorage.getItem('customFemboy');
-            
-            if (saved) {
-                const data = JSON.parse(saved);
-                clicks = data.clicks || 0;
-                boostLevel = data.boostLevel || 0;
-                boostMultiplier = data.boostMultiplier || 1;
-                autoLevel = data.autoLevel || 0;
-                autoClicksPerSec = data.autoClicksPerSec || 0;
-                boostCost = data.boostCost || 50;
-                autoCost = data.autoCost || 250;
-            }
-            
-            if (savedImage && savedImage.startsWith('data:')) {
-                document.getElementById('femboyImage').src = savedImage;
-            }
-        }
-        
-        clickArea.addEventListener('click', (e) => {
-            addClicks(1);
-            showHand(e.offsetX, e.offsetY);
-            
-            // Анимация клика
-            document.getElementById('femboyImage').classList.add('click-animation');
-            setTimeout(() => {
-                document.getElementById('femboyImage').classList.remove('click-animation');
-            }, 200);
-        });
-        
-        uploadBtn.addEventListener('click', loadCustomImage);
-        boostUpgrade.addEventListener('click', buyBoost);
-        autoUpgrade.addEventListener('click', buyAuto);
-        
-        imageUpload.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file?.type.startsWith('image/')) return;
-            const reader = new FileReader();
-            reader.onload = (event) => document.getElementById('femboyImage').src = event.target.result;
-            reader.readAsDataURL(file);
-        });
-        
-        setInterval(() => {
-            if (autoClicksPerSec > 0) {
-                addClicks(autoClicksPerSec / 10);
-            }
-        }, 100);
-        
-        loadGame();
-        updateDisplay();
-    </script>
-</body>
-</html>
+:root {
+    --primary-color: #ff6b9d;
+    --secondary-color: #ffd166;
+    --accent-color: #06d6a0;
+    --background-dark: #1a1a2e;
+    --background-medium: #16213e;
+    --background-light: #0f3460;
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.8);
+    --card-bg: rgba(25, 25, 40, 0.9);
+    --border-color: rgba(255, 255, 255, 0.15);
+    --success-color: #4cd964;
+    --warning-color: #ff9500;
+    --danger-color: #ff3b30;
+    --shadow-light: rgba(0, 0, 0, 0.1);
+    --shadow-dark: rgba(0, 0, 0, 0.3);
+    --transition: all 0.3s ease;
+}
+
+[data-theme="light"] {
+    --primary-color: #ff6b9d;
+    --secondary-color: #ff9500;
+    --accent-color: #34c759;
+    --background-dark: #f2f2f7;
+    --background-medium: #ffffff;
+    --background-light: #e5e5ea;
+    --text-primary: #1c1c1e;
+    --text-secondary: rgba(28, 28, 30, 0.8);
+    --card-bg: rgba(255, 255, 255, 0.9);
+    --border-color: rgba(28, 28, 30, 0.15);
+}
+
+[data-theme="pink"] {
+    --primary-color: #ff2d55;
+    --secondary-color: #ff6b9d;
+    --accent-color: #ff375f;
+    --background-dark: #2d1a36;
+    --background-medium: #3a2442;
+    --background-light: #4a3058;
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.9);
+    --card-bg: rgba(58, 36, 66, 0.9);
+    --border-color: rgba(255, 255, 255, 0.2);
+}
+
+body {
+    background: linear-gradient(135deg, var(--background-dark) 0%, var(--background-medium) 50%, var(--background-light) 100%);
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    min-height: 100vh;
+    padding: 20px;
+    overflow-x: hidden;
+    transition: var(--transition);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+/* Шапка */
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 30px;
+    background: var(--card-bg);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px var(--shadow-dark);
+}
+
+.title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Статистика игры */
+.game-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat {
+    background: var(--card-bg);
+    padding: 25px;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid var(--border-color);
+    transition: var(--transition);
+}
+
+.stat:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px var(--shadow-dark);
+}
+
+.stat-label {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--accent-color);
+    text-shadow: 0 0 20px rgba(6, 214, 160, 0.3);
+}
+
+/* Основная игровая область */
+.game-area {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+@media (max-width: 900px) {
+    .game-area {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Область клика */
+.click-section {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 30px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.counter-container {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.counter-label {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.counter {
+    font-size: 4rem;
+    font-weight: 800;
+    color: var(--secondary-color);
+    text-shadow: 0 0 30px rgba(255, 209, 102, 0.4);
+    background: rgba(0, 0, 0, 0.2);
+    padding: 20px 40px;
+    border-radius: 20px;
+    border: 3px solid rgba(255, 209, 102, 0.3);
+    min-width: 250px;
+}
+
+.click-area {
+    width: 280px;
+    height: 280px;
+    margin: 20px 0 30px;
+    cursor: pointer;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    border: 4px solid var(--border-color);
+    transition: var(--transition);
+    box-shadow: 0 15px 35px var(--shadow-dark);
+}
+
+.click-area:hover {
+    border-color: var(--primary-color);
+    transform: scale(1.05);
+    box-shadow: 0 20px 40px rgba(255, 107, 157, 0.3);
+}
+
+.click-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.hand {
+    font-size: 80px;
+    position: absolute;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 10;
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.7));
+    transition: opacity 0.2s;
+}
+
+.click-hint {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 1.1rem;
+    color: var(--secondary-color);
+    font-weight: 600;
+    opacity: 0.8;
+    animation: pulse 2s infinite;
+}
+
+.boosters {
+    display: flex;
+    gap: 40px;
+    margin-top: 20px;
+}
+
+.booster {
+    text-align: center;
+}
+
+.booster-label {
+    display: block;
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.booster-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+/* Улучшения */
+.upgrades-section {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 30px;
+    border: 1px solid var(--border-color);
+}
+
+.upgrades-title {
+    font-size: 2rem;
+    margin-bottom: 30px;
+    color: var(--primary-color);
+    text-align: center;
+    font-weight: 700;
+}
+
+.upgrade-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 25px;
+    border: 2px solid var(--border-color);
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.upgrade-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--primary-color);
+    box-shadow: 0 10px 25px var(--shadow-dark);
+}
+
+.upgrade-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.6s;
+}
+
+.upgrade-card:hover::before {
+    left: 100%;
+}
+
+.upgrade-icon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+}
+
+.upgrade-content {
+    flex: 1;
+}
+
+.upgrade-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.upgrade-description {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.upgrade-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.upgrade-stat {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.stat-name {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+}
+
+.upgrade-stat .stat-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--accent-color);
+}
+
+.upgrade-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    transition: var(--transition);
+}
+
+.upgrade-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(255, 107, 157, 0.4);
+}
+
+.upgrade-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-text {
+    font-weight: 600;
+}
+
+.btn-price {
+    font-weight: 800;
+    font-size: 1.2rem;
+}
+
+.btn-clicks {
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+.prestige-btn {
+    background: linear-gradient(45deg, #8a2be2, #9370db);
+}
+
+/* Кастомизация */
+.customization {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 40px;
+    border: 1px solid var(--border-color);
+}
+
+.customization-title {
+    font-size: 2rem;
+    margin-bottom: 30px;
+    color: var(--primary-color);
+    text-align: center;
+    font-weight: 700;
+}
+
+.customization-options {
+    display: grid;
+    gap: 25px;
+}
+
+.customization-option {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 25px;
+    border-radius: 16px;
+    border: 2px solid var(--border-color);
+}
+
+.upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    padding: 20px;
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    transition: var(--transition);
+}
+
+.upload-label:hover {
+    border-color: var(--primary-color);
+    background: rgba(255, 107, 157, 0.1);
+}
+
+.upload-icon {
+    font-size: 3rem;
+}
+
+.upload-text {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.upload-hint {
+    font-size: 1rem;
+    color: var(--text-secondary);
+}
+
+.file-input {
+    display: none;
+}
+
+.settings-btn {
+    width: 100%;
+    padding: 18px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    transition: var(--transition);
+    margin-bottom: 15px;
+}
+
+.settings-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.btn-icon {
+    font-size: 1.3rem;
+}
+
+.theme-switcher {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.theme-label {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.theme-options {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.theme-btn {
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    flex: 1;
+    min-width: 120px;
+}
+
+.theme-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.theme-btn.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* Футер */
+.footer {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 30px;
+    border: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.achievements {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.achievement {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px 25px;
+    border-radius: 12px;
+    border: 2px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: var(--transition);
+    opacity: 0.5;
+}
+
+.achievement.unlocked {
+    opacity: 1;
+    border-color: var(--accent-color);
+    background: rgba(6, 214, 160, 0.1);
+}
+
+.achievement-icon {
+    font-size: 1.5rem;
+}
+
+.achievement-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.footer-text {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-top: 20px;
+}
+
+/* Частицы */
+.particles-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Уведомления */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    max-width: 350px;
+}
+
+/* Анимации */
+@keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+
+@keyframes clickAnimation {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+}
+
+@keyframes floatUp {
+    0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-100px) scale(1.5);
+        opacity: 0;
+    }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.click-animation {
+    animation: clickAnimation 0.2s ease;
+}
+
+/* Эффекты частиц */
+.particle {
+    position: absolute;
+    pointer-events: none;
+    font-size: 24px;
+    opacity: 0;
+    animation: floatUp 1s ease-out forwards;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .title {
+        font-size: 2.5rem;
+    }
+    
+    .counter {
+        font-size: 3rem;
+        padding: 15px 30px;
+        min-width: 200px;
+    }
+    
+    .click-area {
+        width: 240px;
+        height: 240px;
+    }
+    
+    .game-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .boosters {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .upgrade-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .theme-switcher {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .theme-options {
+        width: 100%;
+    }
+    
+    .theme-btn {
+        flex: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+    
+    .header,
+    .click-section,
+    .upgrades-section,
+    .customization,
+    .footer {
+        padding: 20px;
+    }
+    
+    .title {
+        font-size: 2rem;
+    }
+    
+    .counter {
+        font-size: 2.5rem;
+    }
+    
+    .click-area {
+        width: 200px;
+        height: 200px;
+    }
+}
