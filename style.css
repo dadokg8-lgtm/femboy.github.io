@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Фембой Кликер</title>
+    <style>
+        /* Сброс и базовые стили */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        /* Контейнер */
+        .container {
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            background: rgba(25, 25, 40, 0.9);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Заголовок */
+        h1 {
+            font-size: 2.8em;
+            margin-bottom: 25px;
+            background: linear-gradient(45deg, #ff6b9d, #ffd166);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(255, 107, 157, 0.3);
+            letter-spacing: 1px;
+        }
+        
+        /* Статистика */
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 20px 0 30px;
+            font-size: 1.2em;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .stats div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        #boost {
+            color: #ffd166;
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+        
+        #auto {
+            color: #06d6a0;
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+        
+        /* Область клика */
+        .click-area {
+            width: 220px;
+            height: 220px;
+            margin: 0 auto 30px;
+            cursor: pointer;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+        
+        .click-area:hover {
+            border-color: rgba(255, 107, 157, 0.5);
+            transform: scale(1.02);
+            box-shadow: 0 15px 30px rgba(255, 107, 157, 0.2);
+        }
+        
+        #femboyImage {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        /* Анимация руки */
+        .hand {
+            font-size: 70px;
+            position: absolute;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 10;
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+            transition: opacity 0.2s;
+        }
+        
+        /* Счётчик */
+        .counter {
+            font-size: 3.5em;
+            margin: 20px 0 30px;
+            color: #ffd166;
+            font-weight: 800;
+            text-shadow: 0 0 20px rgba(255, 209, 102, 0.5);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 15px;
+            border: 2px solid rgba(255, 209, 102, 0.3);
+            letter-spacing: 2px;
+        }
+        
+        /* Улучшения */
+        .upgrades {
+            margin-top: 30px;
+            text-align: left;
+        }
+        
+        .upgrade {
+            background: linear-gradient(145deg, rgba(40, 40, 60, 0.9), rgba(30, 30, 50, 0.9));
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            padding: 18px;
+            margin: 15px 0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .upgrade:hover {
+            transform: translateY(-5px);
+            background: linear-gradient(145deg, rgba(50, 50, 70, 0.9), rgba(40, 40, 60, 0.9));
+            border-color: rgba(255, 107, 157, 0.5);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .upgrade:active {
+            transform: translateY(0);
+        }
+        
+        .upgrade::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+        
+        .upgrade:hover::before {
+            left: 100%;
+        }
+        
+        .upgrade-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 1.2em;
+            color: #ffd166;
+        }
+        
+        .upgrade-cost {
+            color: #ef476f;
+            font-size: 1em;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .upgrade-owned {
+            color: #06d6a0;
+            font-size: 0.95em;
+            font-weight: 600;
+        }
+        
+        /* Кнопка загрузки */
+        .upload-btn {
+            background: linear-gradient(45deg, #118ab2, #06d6a0);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            margin-top: 25px;
+            cursor: pointer;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
+            width: 100%;
+            letter-spacing: 0.5px;
+            box-shadow: 0 5px 15px rgba(6, 214, 160, 0.3);
+        }
+        
+        .upload-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(6, 214, 160, 0.4);
+            background: linear-gradient(45deg, #06d6a0, #118ab2);
+        }
+        
+        .upload-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* Скрытый инпут */
+        #imageUpload {
+            display: none;
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            h1 {
+                font-size: 2.2em;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+                font-size: 1em;
+            }
+            
+            .click-area {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .counter {
+                font-size: 2.8em;
+                padding: 12px;
+            }
+            
+            .upgrade {
+                padding: 15px;
+            }
+        }
+        
+        /* Анимация пульсации для клика */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+        
+        .click-animation {
+            animation: pulse 0.2s ease;
+        }
+        
+        /* Эффект частиц (опционально) */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0.8;
+            font-size: 24px;
+            z-index: 5;
+            animation: float-up 1s ease-out forwards;
+        }
+        
+        @keyframes float-up {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(180deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Фембой Кликер</h1>
+        <div class="stats">
+            <div>Буст: <span id="boost">1x</span></div>
+            <div>Автоклик: <span id="auto">0/сек</span></div>
+        </div>
+        <div class="click-area" id="clickArea">
+            <img id="femboyImage" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop" alt="Фембой">
+            <div class="hand" id="hand">👆</div>
+        </div>
+        <div class="counter" id="counter">0</div>
+        
+        <div class="upgrades">
+            <div class="upgrade" id="boostUpgrade">
+                <div class="upgrade-title">Буст x1.5 (50 кликов)</div>
+                <div class="upgrade-cost" id="boostCost">Стоимость: 50</div>
+                <div class="upgrade-owned" id="boostOwned">Куплено: 0</div>
+            </div>
+            <div class="upgrade" id="autoUpgrade">
+                <div class="upgrade-title">Автомайнер (+1/сек)</div>
+                <div class="upgrade-cost" id="autoCost">Стоимость: 250</div>
+                <div class="upgrade-owned" id="autoOwned">Куплено: 0</div>
+            </div>
+        </div>
+        
+        <div class="upload-btn" id="uploadBtn">Добавить своего фембоя</div>
+        <input type="file" id="imageUpload" accept="image/*">
+    </div>
+
+    <script>
+        // JavaScript остается без изменений, но добавлена небольшая анимация
+        let clicks = 0;
+        let boostLevel = 0;
+        let boostMultiplier = 1;
+        let autoLevel = 0;
+        let autoClicksPerSec = 0;
+        let boostCost = 50;
+        let autoCost = 250;
+        
+        const counter = document.getElementById('counter');
+        const clickArea = document.getElementById('clickArea');
+        const hand = document.getElementById('hand');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const imageUpload = document.getElementById('imageUpload');
+        const boostElement = document.getElementById('boost');
+        const autoElement = document.getElementById('auto');
+        const boostUpgrade = document.getElementById('boostUpgrade');
+        const autoUpgrade = document.getElementById('autoUpgrade');
+        
+        function updateDisplay() {
+            counter.textContent = Math.floor(clicks);
+            boostElement.textContent = boostMultiplier.toFixed(1) + 'x';
+            autoElement.textContent = autoClicksPerSec + '/сек';
+            document.getElementById('boostCost').textContent = `Стоимость: ${boostCost}`;
+            document.getElementById('autoCost').textContent = `Стоимость: ${autoCost}`;
+            document.getElementById('boostOwned').textContent = `Куплено: ${boostLevel}`;
+            document.getElementById('autoOwned').textContent = `Куплено: ${autoLevel}`;
+            saveGame();
+        }
+        
+        function addClicks(amount) {
+            clicks += amount * boostMultiplier;
+            updateDisplay();
+        }
+        
+        function showHand(x, y) {
+            hand.style.left = (x - 30) + 'px';
+            hand.style.top = (y - 60) + 'px';
+            hand.style.opacity = '1';
+            setTimeout(() => hand.style.opacity = '0', 200);
+        }
+        
+        function buyBoost() {
+            if (clicks >= boostCost) {
+                clicks -= boostCost;
+                boostLevel++;
+                boostMultiplier *= 1.5;
+                boostCost = Math.floor(boostCost * 2.5);
+                updateDisplay();
+            }
+        }
+        
+        function buyAuto() {
+            if (clicks >= autoCost) {
+                clicks -= autoCost;
+                autoLevel++;
+                autoClicksPerSec++;
+                autoCost = Math.floor(autoCost * 3);
+                updateDisplay();
+            }
+        }
+        
+        function loadCustomImage() {
+            imageUpload.click();
+        }
+        
+        function saveGame() {
+            const gameData = {
+                clicks, boostLevel, boostMultiplier, autoLevel, 
+                autoClicksPerSec, boostCost, autoCost
+            };
+            localStorage.setItem('femboyGame', JSON.stringify(gameData));
+            localStorage.setItem('customFemboy', document.getElementById('femboyImage').src);
+        }
+        
+        function loadGame() {
+            const saved = localStorage.getItem('femboyGame');
+            const savedImage = localStorage.getItem('customFemboy');
+            
+            if (saved) {
+                const data = JSON.parse(saved);
+                clicks = data.clicks || 0;
+                boostLevel = data.boostLevel || 0;
+                boostMultiplier = data.boostMultiplier || 1;
+                autoLevel = data.autoLevel || 0;
+                autoClicksPerSec = data.autoClicksPerSec || 0;
+                boostCost = data.boostCost || 50;
+                autoCost = data.autoCost || 250;
+            }
+            
+            if (savedImage && savedImage.startsWith('data:')) {
+                document.getElementById('femboyImage').src = savedImage;
+            }
+        }
+        
+        clickArea.addEventListener('click', (e) => {
+            addClicks(1);
+            showHand(e.offsetX, e.offsetY);
+            
+            // Анимация клика
+            document.getElementById('femboyImage').classList.add('click-animation');
+            setTimeout(() => {
+                document.getElementById('femboyImage').classList.remove('click-animation');
+            }, 200);
+        });
+        
+        uploadBtn.addEventListener('click', loadCustomImage);
+        boostUpgrade.addEventListener('click', buyBoost);
+        autoUpgrade.addEventListener('click', buyAuto);
+        
+        imageUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file?.type.startsWith('image/')) return;
+            const reader = new FileReader();
+            reader.onload = (event) => document.getElementById('femboyImage').src = event.target.result;
+            reader.readAsDataURL(file);
+        });
+        
+        setInterval(() => {
+            if (autoClicksPerSec > 0) {
+                addClicks(autoClicksPerSec / 10);
+            }
+        }, 100);
+        
+        loadGame();
+        updateDisplay();
+    </script>
+</body>
+</html>

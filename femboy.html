@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Фембой Кликер</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #000; color: #fff; font-family: Arial; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .container { text-align: center; max-width: 500px; width: 100%; }
+        h1 { font-size: 2.5em; margin-bottom: 20px; }
+        .click-area { width: 200px; height: 200px; margin: 0 auto 20px; cursor: pointer; border: 2px solid #fff; border-radius: 50%; overflow: hidden; position: relative; }
+        #femboyImage { width: 100%; height: 100%; object-fit: cover; }
+        .hand { font-size: 60px; position: absolute; pointer-events: none; opacity: 0; z-index: 10; }
+        .counter { font-size: 2.5em; margin: 15px 0; color: #0f0; }
+        .upgrades { margin-top: 25px; text-align: left; }
+        .upgrade { background: #222; border: 1px solid #444; padding: 15px; margin: 10px 0; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .upgrade:hover { background: #333; }
+        .upgrade-title { font-weight: bold; margin-bottom: 5px; }
+        .upgrade-cost { color: #ff4444; font-size: 0.9em; }
+        .upgrade-owned { color: #44ff44; font-size: 0.9em; margin-top: 5px; }
+        .upload-btn { background: #222; color: #fff; border: 1px solid #fff; padding: 12px 24px; margin-top: 20px; cursor: pointer; }
+        #imageUpload { display: none; }
+        .stats { display: flex; justify-content: center; gap: 30px; margin: 15px 0; font-size: 1.1em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Фембой Кликер</h1>
+        <div class="stats">
+            <div>Буст: <span id="boost">1x</span></div>
+            <div>Автоклик: <span id="auto">0/сек</span></div>
+        </div>
+        <div class="click-area" id="clickArea">
+            <img id="femboyImage" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop" alt="Фембой">
+            <div class="hand" id="hand">👆</div>
+        </div>
+        <div class="counter" id="counter">0</div>
+        
+        <div class="upgrades">
+            <div class="upgrade" id="boostUpgrade">
+                <div class="upgrade-title">Буст x1.5 (50 кликов)</div>
+                <div class="upgrade-cost" id="boostCost">Стоимость: 50</div>
+                <div class="upgrade-owned" id="boostOwned">Куплено: 0</div>
+            </div>
+            <div class="upgrade" id="autoUpgrade">
+                <div class="upgrade-title">Автомайнер (+1/сек)</div>
+                <div class="upgrade-cost" id="autoCost">Стоимость: 250</div>
+                <div class="upgrade-owned" id="autoOwned">Куплено: 0</div>
+            </div>
+        </div>
+        
+        <div class="upload-btn" id="uploadBtn">Добавить своего фембоя</div>
+        <input type="file" id="imageUpload" accept="image/*">
+    </div>
+
+    <script>
+        let clicks = 0;
+        let boostLevel = 0;
+        let boostMultiplier = 1;
+        let autoLevel = 0;
+        let autoClicksPerSec = 0;
+        let boostCost = 50;
+        let autoCost = 250;
+        
+        const counter = document.getElementById('counter');
+        const clickArea = document.getElementById('clickArea');
+        const hand = document.getElementById('hand');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const imageUpload = document.getElementById('imageUpload');
+        const boostElement = document.getElementById('boost');
+        const autoElement = document.getElementById('auto');
+        const boostUpgrade = document.getElementById('boostUpgrade');
+        const autoUpgrade = document.getElementById('autoUpgrade');
+        
+        function updateDisplay() {
+            counter.textContent = Math.floor(clicks);
+            boostElement.textContent = boostMultiplier.toFixed(1) + 'x';
+            autoElement.textContent = autoClicksPerSec + '/сек';
+            document.getElementById('boostCost').textContent = `Стоимость: ${boostCost}`;
+            document.getElementById('autoCost').textContent = `Стоимость: ${autoCost}`;
+            document.getElementById('boostOwned').textContent = `Куплено: ${boostLevel}`;
+            document.getElementById('autoOwned').textContent = `Куплено: ${autoLevel}`;
+            saveGame();
+        }
+        
+        function addClicks(amount) {
+            clicks += amount * boostMultiplier;
+            updateDisplay();
+        }
+        
+        function showHand(x, y) {
+            hand.style.left = (x - 30) + 'px';
+            hand.style.top = (y - 60) + 'px';
+            hand.style.opacity = '1';
+            setTimeout(() => hand.style.opacity = '0', 200);
+        }
+        
+        function buyBoost() {
+            if (clicks >= boostCost) {
+                clicks -= boostCost;
+                boostLevel++;
+                boostMultiplier *= 1.5;
+                boostCost = Math.floor(boostCost * 2.5);
+                updateDisplay();
+            }
+        }
+        
+        function buyAuto() {
+            if (clicks >= autoCost) {
+                clicks -= autoCost;
+                autoLevel++;
+                autoClicksPerSec++;
+                autoCost = Math.floor(autoCost * 3);
+                updateDisplay();
+            }
+        }
+        
+        function loadCustomImage() {
+            imageUpload.click();
+        }
+        
+        function saveGame() {
+            const gameData = {
+                clicks, boostLevel, boostMultiplier, autoLevel, 
+                autoClicksPerSec, boostCost, autoCost
+            };
+            localStorage.setItem('femboyGame', JSON.stringify(gameData));
+            localStorage.setItem('customFemboy', document.getElementById('femboyImage').src);
+        }
+        
+        function loadGame() {
+            const saved = localStorage.getItem('femboyGame');
+            const savedImage = localStorage.getItem('customFemboy');
+            
+            if (saved) {
+                const data = JSON.parse(saved);
+                clicks = data.clicks || 0;
+                boostLevel = data.boostLevel || 0;
+                boostMultiplier = data.boostMultiplier || 1;
+                autoLevel = data.autoLevel || 0;
+                autoClicksPerSec = data.autoClicksPerSec || 0;
+                boostCost = data.boostCost || 50;
+                autoCost = data.autoCost || 250;
+            }
+            
+            if (savedImage && savedImage.startsWith('data:')) {
+                document.getElementById('femboyImage').src = savedImage;
+            }
+        }
+        
+        clickArea.addEventListener('click', (e) => {
+            addClicks(1);
+            showHand(e.offsetX, e.offsetY);
+            document.getElementById('femboyImage').style.transform = 'scale(0.95)';
+            setTimeout(() => document.getElementById('femboyImage').style.transform = 'scale(1)', 100);
+        });
+        
+        uploadBtn.addEventListener('click', loadCustomImage);
+        boostUpgrade.addEventListener('click', buyBoost);
+        autoUpgrade.addEventListener('click', buyAuto);
+        
+        imageUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file?.type.startsWith('image/')) return;
+            const reader = new FileReader();
+            reader.onload = (event) => document.getElementById('femboyImage').src = event.target.result;
+            reader.readAsDataURL(file);
+        });
+        
+        setInterval(() => {
+            if (autoClicksPerSec > 0) {
+                addClicks(autoClicksPerSec / 10);
+            }
+        }, 100);
+        
+        loadGame();
+        updateDisplay();
+    </script>
+</body>
+</html>
